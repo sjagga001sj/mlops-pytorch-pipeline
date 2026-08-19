@@ -27,8 +27,12 @@ files = [
 
 # Create directories and empty files
 for file_path in files:
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    directory = os.path.dirname(file_path)
+
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+
     with open(file_path, "a"):
-        os.utime(file_path, None)  # Creates an empty file if it doesn't exist
+        os.utime(file_path, None)
 
 print("Project structure created successfully!")
