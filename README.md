@@ -57,31 +57,90 @@ mlops-pytorch-pipeline/
 ```
 System & Pipeline Architecture
 ```plaintext
-[ Developer / Git Push ]
-          │
-          ▼
-[ GitHub Actions CI/CD ] ──(Builds)──► [ Docker Containers (train/serve) ]
-                                                      │
-                                                  (Deploys)
-                                                      ▼
-                            ┌──────────────────────────────────────────┐
-                            │            Kubernetes Cluster            │
-                            │                                          │
-                            │  [ ConfigMap ]  ──► [ Training Job ]     │
-                            │                          │               │
-                            │                     (Saves model)        │
-                            │                          ▼               │
-                            │               [ Persistent Volume ]      │
-                            │                          ▲               │
-                            │                    (Loads model)         │
-                            │                          │               │
-                            │  [ HPA ] ──► [ Serving Deployment ]      │
-                            │                      ▲                   │
-                            │                      │                   │
-                            │             [ Serving Service ]          │
-                            └──────────────────────┼───────────────────┘
-                                                   │(FastApi)
-                                            [ Client / User ]
+                         ┌──────────────────────┐
+                         │      Developer       │
+                         │                      │
+                         │  Code / train.py     │
+                         │  serve.py / configs  │
+                         └──────────┬───────────┘
+                                    │
+                              Docker Build
+                                    │
+                    ┌───────────────┴────────────────┐
+                    │                                │
+                    ▼                                ▼
+          ┌──────────────────┐            ┌──────────────────┐
+          │ Docker Image     │            │ Docker Image     │
+          │ mlops-train:v1   │            │ mlops-serve:v1   │
+          │                  │            │                  │
+          │ Training         │            │ FastAPI Serving  │
+          └────────┬─────────┘            └────────┬─────────┘
+                   │                               │
+                   │                               │
+                   └───────────────┬───────────────┘
+                                   │
+                                   │ Deploy
+                                   ▼
+        ┌─────────────────────────────────────────────────────┐
+        │                 Kubernetes / Minikube                │
+        │                                                     │
+        │   ┌──────────────────┐                              │
+        │   │    ConfigMap     │                              │
+        │   │ training-config  │                              │
+        │   └────────┬─────────┘                              │
+        │            │                                        │
+        │            ▼                                        │
+        │   ┌──────────────────┐                              │
+        │   │  Training Job    │                              │
+        │   │                  │                              │
+        │   │ mlops-train:v1   │                              │
+        │   └────────┬─────────┘                              │
+        │            │                                        │
+        │       Train Model                                   │
+        │            │                                        │
+        │            ▼                                        │
+        │   ┌──────────────────┐                              │
+        │   │       PVC        │                              │
+        │   │    mlops-pvc     │                              │
+        │   │                  │                              │
+        │   │ best_model.pt    │                              │
+        │   └────────┬─────────┘                              │
+        │            │                                        │
+        │            │ Load Model                             │
+        │            ▼                                        │
+        │   ┌─────────────────────────┐                       │
+        │   │ Serving Deployment      │                       │
+        │   │                         │                       │
+        │   │ mlops-serve:v1          │                       │
+        │   │                         │                       │
+        │   │ FastAPI                 │                       │
+        │   │ /predict                │                       │
+        │   └────────────┬────────────┘                       │
+        │                │                                    │
+        │                ▼                                    │
+        │       ┌──────────────────┐                          │
+        │       │ Serving Service  │                          │
+        │       │  NodePort / etc. │                          │
+        │       └────────┬─────────┘                          │
+        │                │                                    │
+        │       ┌────────┴─────────┐                          │
+        │       │       HPA        │                          │
+        │       │ Auto Scaling     │                          │
+        │       └──────────────────┘                          │
+        │                                                     │
+        │       ┌──────────────────┐   ┌──────────────────┐   │
+        │       │    Prometheus    │──►│     Grafana      │   │
+        │       │    Monitoring    │   │   Dashboards     │   │
+        │       └──────────────────┘   └──────────────────┘   │
+        └──────────────────────┬──────────────────────────────┘
+                               │
+                               │ HTTP / FastAPI
+                               ▼
+                       ┌──────────────────┐
+                       │  Client / User   │
+                       │                  │
+                       │ Prediction       │
+                       └──────────────────┘
 ```    
 Model Architecture
 ```plaintext
@@ -130,7 +189,7 @@ curl http://localhost:8080/health
 # 4. check the prediction endpoint , please keep the test_image.jpeg in project directory to test from local.
 curl -X POST http://localhost:8080/predict -F "image=@test_image.jpeg"
 # output will come like  this 
-{"filename":"test_frog_image.jpeg","prediction":"frog","confidence":1.0,"probabilities":{"airplane":0.0,"automobile":0.0,"bird":0.0,"cat":0.0,"deer":0.0,"dog":0.0,"frog":1.0,"horse":0.0,"ship":0.0,"truck":0.0}}
+{"filename":"test_image.jpeg","prediction":"horse","confidence":1.0,"probabilities":{"airplane":0.0,"automobile":0.0,"bird":0.0,"cat":0.0,"deer":0.0,"dog":0.0,"frog":1.0,"horse":0.0,"ship":0.0,"truck":0.0}}
 ```
 Part C : Docker Containerization
 ```plaintext
