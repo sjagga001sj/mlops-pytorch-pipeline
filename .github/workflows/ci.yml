@@ -1,0 +1,36 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/train.txt -r requirements/serve.txt pytest
+
+      - name: Run Unit Tests
+        run: |
+          PYTHONPATH=. pytest tests/
+
+      - name: Build Training Docker Image
+        run: |
+          docker build -t mlops-train:latest -f docker/Dockerfile.train .
+
+      - name: Build Serving Docker Image
+        run: |
+          docker build -t mlops-serve:latest -f docker/Dockerfile.serve .
