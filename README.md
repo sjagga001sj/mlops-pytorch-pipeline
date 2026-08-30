@@ -4,23 +4,30 @@ Assignment2: Deploying PyTorch ML Workloads with Docker & Kubernetes
 name : Sagar Jagga
 roll_no : da25m526
 ```
-🎯 Overview
+# 🎯 Overview
+
 In this assignment, you will take a PyTorch image classification model through the full deployment lifecycle: from local development with proper Git workflows, to containerized training with Docker, to orchestrated deployment on Kubernetes. By the end, you will have a production-style ML pipeline that can train and serve predictions at scale.
-🎓 Learning Objectives
-By completing this assignment, you will be able to:
-Structure an ML project repository with proper Git practices (branching, PRs, .gitignore secrets management)
-Write multi-stage Dockerfiles optimized for ML workloads
-Deploy PyTorch training jobs on Kubernetes using Jobs and persistent storage
-Serve a trained model via a Kubernetes Deployment with health checks
-Use ConfigMaps and Secrets for environment-specific configuration
-📋 Prerequisites
-Python 3.10+, PyTorch experience
-Docker Desktop installed (or access to a Docker-enabled VM)
-kubectl CLI installed
-A Kubernetes cluster (Minikube, kind, or a cloud-managed cluster)
-A GitHub account
-Part A: Repository Setup
-🛠️ Repository Architecture
+
+# 🎓 Learning Objectives
+
+  1. By completing this assignment, you will be able to:
+  2. Structure an ML project repository with proper Git practices (branching, PRs, .gitignore secrets management)
+  3. Write multi-stage Dockerfiles optimized for ML workloads
+  4. Deploy PyTorch training jobs on Kubernetes using Jobs and persistent storage
+  5. Serve a trained model via a Kubernetes Deployment with health checks
+  6. Use ConfigMaps and Secrets for environment-specific configuration.
+     
+# 📋 Prerequisites
+
+ - Python 3.10+, PyTorch experience
+ - Docker Desktop installed (or access to a Docker-enabled VM)
+ - kubectl CLI installed
+ - A Kubernetes cluster (Minikube, kind, or a cloud-managed cluster)
+ - A GitHub account.
+   
+# Part A: Repository Setup
+
+# 🛠️ Repository Architecture
 ```text
 mlops-pytorch-pipeline/
 ├── README.md
@@ -55,7 +62,7 @@ mlops-pytorch-pipeline/
 ├── utility/
 │   └── setup.py
 ```
-System & Pipeline Architecture
+# System & Pipeline Architecture
 ```plaintext
                          ┌──────────────────────┐
                          │      Developer       │
@@ -141,7 +148,7 @@ System & Pipeline Architecture
                        │ Prediction       │
                        └──────────────────┘
 ```    
-Model Architecture
+# Model Architecture
 ```plaintext
 model : ResNet-18
 input : 3x32x32 pixels
@@ -157,7 +164,7 @@ output class :{"airplane",
     "truck"}
 Loss & Optimizer: Cross-Entropy Loss with Adam optimizer (lr = 0.001)
 ```
-🚀 Quick Start
+# 🚀 Quick Start
 ```bash
 # Set up Python virtual environment
 python -m venv venv
@@ -169,7 +176,7 @@ pip install -r requirements/train.txt
 # Install serving requirements
 pip install -r requirements/serve.txt
 ```
-Part B : PyTorch Model
+# Part B : PyTorch Model
 ```plaintext
 So repo steup , branch creation etc..till that it was PART A. Now will be doing the Part B pytorch model training on `CIFAR-10` dataset.
 ```
@@ -190,7 +197,7 @@ curl -X POST http://localhost:8080/predict -F "image=@test_image.jpeg"
 # output will come like  this 
 {"filename":"test_image.jpeg","prediction":"horse","confidence":1.0,"probabilities":{"airplane":0.0,"automobile":0.0,"bird":0.0,"cat":0.0,"deer":0.0,"dog":0.0,"frog":1.0,"horse":0.0,"ship":0.0,"truck":0.0}}
 ```
-Part C : Docker Containerization
+# Part C : Docker Containerization
 ```plaintext
 now Part B tested successfully , let's do the Part C. 
 ```
@@ -223,7 +230,7 @@ curl http://localhost:8080/health
 curl -X POST http://localhost:8080/predict -F "image=@test_image.jpeg"
 
 ```
-Part D: Kubernetes Training Job + Part E: Kubernetes Model Serving + Part F: End-to-End Validation
+# Part D: Kubernetes Training Job + Part E: Kubernetes Model Serving + Part F: End-to-End Validation
 ```plaintext
 now Part C tested successfully , let's do the Part D , E, F for k8s implementation.
 ```
